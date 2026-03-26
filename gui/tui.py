@@ -56,9 +56,9 @@ else:
     Screen { background: #0d0d0d; }
     Header { background: #1a0030; color: #b44fff; }
     Footer { background: #0d0d0d; }
-    TabbedContent { background: #0d0d0d; }
-    TabPane { padding: 0; }
-    VerticalScroll { padding: 1 2; }
+    TabbedContent { background: #0d0d0d; height: 1fr; }
+    TabPane { padding: 0; height: 1fr; }
+    VerticalScroll { padding: 1 2; height: 1fr; }
     .wizard-box { border: solid #2a2a2a; padding: 1 2; margin-bottom: 1; }
     .preview-box { border: solid #39ff14; background: #0a1a0a;
                    padding: 1 2; margin-top: 1; color: #39ff14;
@@ -66,7 +66,7 @@ else:
     .step-label { color: #00d4ff; text-style: bold; margin-bottom: 1; }
     .hint { color: #555; margin-bottom: 1; }
     .section-title { color: #ffd600; text-style: bold; margin: 1 0; }
-    Input { background: #1e1e1e; border: solid #2a2a2a; color: #e0e0e0; }
+    Input { background: #1e1e1e; border: solid #2a2a2a; color: #e0e0e0; height: 3; }
     Input:focus { border: solid #b44fff; }
     Button { background: #b44fff; color: #000; border: none; margin-top: 1; }
     Button:hover { background: #00d4ff; }
@@ -118,15 +118,15 @@ else:
                 with Vertical(classes='wizard-box hidden', id='bld-s3'):
                     yield Label('Step 3 \u2014 Operators', classes='step-label')
                     yield Label('site:', classes='hint')
-                    yield Input(placeholder='example.com', id='bop-site')
+                    yield Input(placeholder='example.com  (optional)', id='bop-site')
                     yield Label('intitle:', classes='hint')
-                    yield Input(placeholder='index of', id='bop-intitle')
+                    yield Input(placeholder='index of  (optional)', id='bop-intitle')
                     yield Label('filetype:', classes='hint')
-                    yield Input(placeholder='pdf', id='bop-filetype')
+                    yield Input(placeholder='pdf  (optional)', id='bop-filetype')
                     yield Label('intext:', classes='hint')
-                    yield Input(placeholder='password', id='bop-intext')
+                    yield Input(placeholder='password  (optional)', id='bop-intext')
                     yield Label('Exclude (-term):', classes='hint')
-                    yield Input(placeholder='login,admin', id='bop-minus')
+                    yield Input(placeholder='login,admin  (optional)', id='bop-minus')
                     yield Horizontal(
                         Button('\u2190 Back', id='bld-s3-back', classes='secondary'),
                         Button('\u26a1 Generate', id='bld-generate'),
@@ -202,15 +202,15 @@ else:
                 with Vertical(classes='wizard-box hidden', id='dir-s3'):
                     yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
                     yield Label('Keywords:', classes='hint')
-                    yield Input(placeholder='mp4 movies 2024', id='dir-kw')
+                    yield Input(placeholder='mp4 movies 2024  (optional)', id='dir-kw')
                     yield Label('intitle:', classes='hint')
-                    yield Input(id='dir-intitle')
+                    yield Input(placeholder='index of  (optional)', id='dir-intitle')
                     yield Label('intext:', classes='hint')
-                    yield Input(id='dir-intext')
+                    yield Input(placeholder='password  (optional)', id='dir-intext')
                     yield Label('filetype:', classes='hint')
-                    yield Input(id='dir-filetype')
+                    yield Input(placeholder='pdf  (optional)', id='dir-filetype')
                     yield Label('Exclude:', classes='hint')
-                    yield Input(id='dir-minus')
+                    yield Input(placeholder='-login -admin  (optional)', id='dir-minus')
                     yield Horizontal(
                         Button('\u2190 Back', id='dir-s3-back', classes='secondary'),
                         Button('\u26a1 Generate', id='dir-generate'),
@@ -301,15 +301,15 @@ else:
                 with Vertical(classes='wizard-box hidden', id='ff-s3'):
                     yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
                     yield Label('Keywords:', classes='hint')
-                    yield Input(placeholder='password username', id='ff-kw')
+                    yield Input(placeholder='password username  (optional)', id='ff-kw')
                     yield Label('intext:', classes='hint')
-                    yield Input(id='ff-intext')
+                    yield Input(placeholder='confidential  (optional)', id='ff-intext')
                     yield Label('inurl:', classes='hint')
-                    yield Input(id='ff-inurl')
+                    yield Input(placeholder='admin  (optional)', id='ff-inurl')
                     yield Label('filetype override:', classes='hint')
-                    yield Input(id='ff-filetype')
+                    yield Input(placeholder='xls pdf  (optional)', id='ff-filetype')
                     yield Label('Exclude:', classes='hint')
-                    yield Input(id='ff-minus')
+                    yield Input(placeholder='-login -signup  (optional)', id='ff-minus')
                     yield Horizontal(
                         Button('\u2190 Back', id='ff-s3-back', classes='secondary'),
                         Button('\u26a1 Generate', id='ff-generate'),
@@ -416,7 +416,14 @@ else:
         CSS = CSS
         TITLE = 'dookie'
         SUB_TITLE = 'Google Dork Builder'
-        BINDINGS = [('q', 'quit', 'Quit'), ('ctrl+c', 'quit', 'Quit')]
+        BINDINGS = [
+            ('q', 'quit', 'Quit'),
+            ('ctrl+c', 'quit', 'Quit'),
+            ('j', 'scroll_down', 'Scroll Down'),
+            ('k', 'scroll_up', 'Scroll Up'),
+            ('pagedown', 'scroll_down_page', 'Page Down'),
+            ('pageup', 'scroll_up_page', 'Page Up'),
+        ]
 
         def compose(self) -> ComposeResult:
             yield Header()
@@ -430,6 +437,26 @@ else:
                 with PresetsTab('\u2b50 Presets'):
                     pass
             yield Footer()
+
+        def action_scroll_down(self):
+            scroller = self.query(VerticalScroll)
+            if scroller:
+                scroller.first().scroll_down()
+
+        def action_scroll_up(self):
+            scroller = self.query(VerticalScroll)
+            if scroller:
+                scroller.first().scroll_up()
+
+        def action_scroll_down_page(self):
+            scroller = self.query(VerticalScroll)
+            if scroller:
+                scroller.first().scroll_page_down()
+
+        def action_scroll_up_page(self):
+            scroller = self.query(VerticalScroll)
+            if scroller:
+                scroller.first().scroll_page_up()
 
 
     def run():
