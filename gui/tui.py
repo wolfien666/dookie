@@ -46,33 +46,29 @@ else:
                    or category_substring.lower() in p['category_label'].lower()]
         return [(p['name'], p['id']) for p in matches]
 
-    def _all_preset_options():
-        return [(p['name'], p['id']) for p in load_presets()]
-
     CSS = """
     Screen { background: #0d0d0d; }
     Header { background: #1a0030; color: #b44fff; }
     Footer { background: #0d0d0d; }
-    TabbedContent { background: #0d0d0d; height: 1fr; }
-    TabPane { padding: 0; height: 1fr; }
-    VerticalScroll { padding: 1 2; height: 1fr; }
-    .wizard-box { border: solid #2a2a2a; padding: 1 2; margin-bottom: 1; }
+    TabbedContent { height: 1fr; background: #0d0d0d; }
+    TabPane { height: 1fr; padding: 0; }
+    VerticalScroll { height: 1fr; padding: 1 2; }
+    .wizard-box { border: solid #2a2a2a; padding: 1 2; margin-bottom: 1; height: auto; }
     .preview-box { border: solid #39ff14; background: #0a1a0a;
                    padding: 1 2; margin-top: 1; color: #39ff14;
-                   min-height: 4; }
+                   min-height: 4; height: auto; }
     .step-label { color: #00d4ff; text-style: bold; margin-bottom: 1; }
     .hint { color: #555; margin-bottom: 1; }
     .section-title { color: #ffd600; text-style: bold; margin: 1 0; }
     Input { background: #1e1e1e; border: solid #2a2a2a; color: #e0e0e0; height: 3; }
     Input:focus { border: solid #b44fff; }
-    Button { background: #b44fff; color: #000; border: none; margin-top: 1; }
+    Button { background: #b44fff; color: #000; border: none; margin-top: 1; height: 3; }
     Button:hover { background: #00d4ff; }
     Button.secondary { background: #1e1e1e; border: solid #2a2a2a; color: #888; }
     Button.copy { background: #1e1e1e; border: solid #00d4ff; color: #00d4ff; }
     Select { background: #1e1e1e; border: solid #2a2a2a; color: #e0e0e0; }
     RadioButton { color: #e0e0e0; }
-    .mode-row { height: 3; }
-    .hidden { display: none; }
+    Horizontal { height: auto; }
     """
 
     class DorkPreview(Static):
@@ -80,104 +76,116 @@ else:
         def render(self):
             return self.dork if self.dork else '(your dork will appear here)'
 
-    class WizardStep(Container):
-        pass
-
-    # ---- Shared scroll mixin ---------------------------------------------------
-    class ScrollMixin:
-        """Adds j/k/PageDown/PageUp scrolling to any TabPane subclass."""
-
-        BINDINGS = [
-            ('j', 'scroll_dn', 'Scroll Down'),
-            ('k', 'scroll_up', 'Scroll Up'),
-            ('pagedown', 'page_dn', 'Page Down'),
-            ('pageup', 'page_up', 'Page Up'),
-        ]
-
-        def _get_scroller(self):
-            try:
-                return self.query_one(VerticalScroll)
-            except Exception:
-                return None
-
-        def action_scroll_dn(self):
-            s = self._get_scroller()
-            if s: s.scroll_down()
-
-        def action_scroll_up(self):
-            s = self._get_scroller()
-            if s: s.scroll_up()
-
-        def action_page_dn(self):
-            s = self._get_scroller()
-            if s: s.scroll_page_down()
-
-        def action_page_up(self):
-            s = self._get_scroller()
-            if s: s.scroll_page_up()
 
     # ---- Builder Tab ------------------------------------------------------------
-    class BuilderTab(ScrollMixin, TabPane):
-        STEP = reactive(1)
-        _keywords: str = ''
+    class BuilderTab(TabPane):
+        BINDINGS = [
+            ('j', 'scroll_dn', 'Scroll ▼'),
+            ('k', 'scroll_up', 'Scroll ▲'),
+            ('pagedown', 'page_dn', 'PgDn'),
+            ('pageup',   'page_up', 'PgUp'),
+        ]
+        _step: int = 1
         _mode: str = 'basic'
-        _ops: dict = {}
 
         def compose(self) -> ComposeResult:
-            with VerticalScroll():
+            with VerticalScroll(id='bld-scroll'):
                 yield Label('\u2731 Keyword + Operator Builder', classes='section-title')
-                with Vertical(classes='wizard-box', id='bld-s1'):
-                    yield Label('Step 1 \u2014 Keywords', classes='step-label')
-                    yield Label('What are you hunting for?', classes='hint')
-                    yield Input(placeholder='e.g. admin login database', id='bld-kw')
-                    yield Button('Next \u2192', id='bld-s1-next')
-                with Vertical(classes='wizard-box hidden', id='bld-s2'):
-                    yield Label('Step 2 \u2014 Mode', classes='step-label')
-                    with RadioSet(id='bld-mode'):
-                        yield RadioButton('Basic  \u2014 site, intitle, filetype, intext', value=True, id='bld-basic')
-                        yield RadioButton('Advanced \u2014 full operator picker', id='bld-adv')
-                    yield Horizontal(
-                        Button('\u2190 Back', id='bld-s2-back', classes='secondary'),
-                        Button('Next \u2192', id='bld-s2-next'),
-                    )
-                with Vertical(classes='wizard-box hidden', id='bld-s3'):
-                    yield Label('Step 3 \u2014 Operators', classes='step-label')
-                    yield Label('site:', classes='hint')
-                    yield Input(placeholder='example.com  (optional)', id='bop-site')
-                    yield Label('intitle:', classes='hint')
-                    yield Input(placeholder='index of  (optional)', id='bop-intitle')
-                    yield Label('filetype:', classes='hint')
-                    yield Input(placeholder='pdf  (optional)', id='bop-filetype')
-                    yield Label('intext:', classes='hint')
-                    yield Input(placeholder='password  (optional)', id='bop-intext')
-                    yield Label('Exclude (-term):', classes='hint')
-                    yield Input(placeholder='login,admin  (optional)', id='bop-minus')
-                    yield Horizontal(
-                        Button('\u2190 Back', id='bld-s3-back', classes='secondary'),
-                        Button('\u26a1 Generate', id='bld-generate'),
-                    )
+                yield self._render_step()
                 yield Label('\U0001f50d Dork Preview', classes='section-title')
                 yield DorkPreview(id='preview-builder', classes='preview-box')
                 yield Button('\U0001f4cb Copy', id='bld-copy', classes='copy')
 
-        @on(Button.Pressed, '#bld-s1-next')
-        def step1_next(self): self._go(2)
-        @on(Button.Pressed, '#bld-s2-back')
-        def step2_back(self): self._go(1)
-        @on(Button.Pressed, '#bld-s2-next')
-        def step2_next(self): self._go(3)
-        @on(Button.Pressed, '#bld-s3-back')
-        def step3_back(self): self._go(2)
+        def _render_step(self):
+            if self._step == 1:
+                return self._step1()
+            elif self._step == 2:
+                return self._step2()
+            else:
+                return self._step3()
+
+        def _step1(self):
+            box = Vertical(classes='wizard-box', id='bld-box')
+            box.compose_add_child(Label('Step 1 \u2014 Keywords', classes='step-label'))
+            box.compose_add_child(Label('What are you hunting for?', classes='hint'))
+            box.compose_add_child(Input(placeholder='e.g. admin login database', id='bld-kw'))
+            box.compose_add_child(Button('Next \u2192', id='bld-next'))
+            return box
+
+        def _step2(self):
+            box = Vertical(classes='wizard-box', id='bld-box')
+            box.compose_add_child(Label('Step 2 \u2014 Mode', classes='step-label'))
+            rs = RadioSet(id='bld-mode')
+            rs.compose_add_child(RadioButton('Basic  \u2014 site, intitle, filetype, intext', value=True, id='bld-basic'))
+            rs.compose_add_child(RadioButton('Advanced \u2014 full operator picker', id='bld-adv'))
+            box.compose_add_child(rs)
+            row = Horizontal()
+            row.compose_add_child(Button('\u2190 Back', id='bld-back', classes='secondary'))
+            row.compose_add_child(Button('Next \u2192', id='bld-next'))
+            box.compose_add_child(row)
+            return box
+
+        def _step3(self):
+            box = Vertical(classes='wizard-box', id='bld-box')
+            box.compose_add_child(Label('Step 3 \u2014 Operators', classes='step-label'))
+            for lbl, pid, ph in [
+                ('site:',          'bop-site',    'example.com  (optional)'),
+                ('intitle:',       'bop-intitle', 'index of  (optional)'),
+                ('filetype:',      'bop-filetype','pdf  (optional)'),
+                ('intext:',        'bop-intext',  'password  (optional)'),
+                ('Exclude (-term):','bop-minus',  'login,admin  (optional)'),
+            ]:
+                box.compose_add_child(Label(lbl, classes='hint'))
+                box.compose_add_child(Input(placeholder=ph, id=pid))
+            row = Horizontal()
+            row.compose_add_child(Button('\u2190 Back', id='bld-back', classes='secondary'))
+            row.compose_add_child(Button('\u26a1 Generate', id='bld-generate'))
+            box.compose_add_child(row)
+            return box
+
+        def _refresh(self):
+            scroll = self.query_one('#bld-scroll', VerticalScroll)
+            try:
+                old = self.query_one('#bld-box')
+                old.remove()
+            except Exception:
+                pass
+            title = self.query_one('.section-title')
+            scroll.mount(self._render_step(), before=title)
+            scroll.scroll_home(animate=False)
+
+        @on(Button.Pressed, '#bld-next')
+        def _next(self):
+            if self._step == 1:
+                self._step = 2
+            elif self._step == 2:
+                self._step = 3
+            self._refresh()
+
+        @on(Button.Pressed, '#bld-back')
+        def _back(self):
+            if self._step > 1:
+                self._step -= 1
+            self._refresh()
 
         @on(Button.Pressed, '#bld-generate')
         def do_generate(self):
-            kw = [k for k in self.query_one('#bld-kw', Input).value.split() if k]
+            try:
+                kw = [k for k in self.query_one('#bld-kw', Input).value.split() if k]
+            except Exception:
+                kw = []
             ops = {}
             for oid in ['site','intitle','filetype','intext']:
-                v = self.query_one(f'#bop-{oid}', Input).value.strip()
-                if v: ops[oid] = v
-            minus = self.query_one('#bop-minus', Input).value.strip()
-            if minus: ops['exclude'] = minus
+                try:
+                    v = self.query_one(f'#bop-{oid}', Input).value.strip()
+                    if v: ops[oid] = v
+                except Exception:
+                    pass
+            try:
+                minus = self.query_one('#bop-minus', Input).value.strip()
+                if minus: ops['exclude'] = minus
+            except Exception:
+                pass
             dork = assemble_dork(keywords=kw, operators=ops)
             self.query_one('#preview-builder', DorkPreview).dork = dork
 
@@ -191,84 +199,139 @@ else:
                 except ImportError:
                     self.app.notify('pip install pyperclip to enable copy')
 
-        def _go(self, step: int):
-            for s in [1, 2, 3]:
-                w = self.query_one(f'#bld-s{s}')
-                if s == step: w.remove_class('hidden')
-                else: w.add_class('hidden')
-            self.query_one(VerticalScroll).scroll_home(animate=False)
+        def action_scroll_dn(self): self.query_one('#bld-scroll', VerticalScroll).scroll_down()
+        def action_scroll_up(self): self.query_one('#bld-scroll', VerticalScroll).scroll_up()
+        def action_page_dn(self):   self.query_one('#bld-scroll', VerticalScroll).scroll_page_down()
+        def action_page_up(self):   self.query_one('#bld-scroll', VerticalScroll).scroll_page_up()
 
 
     # ---- Dirs Tab ---------------------------------------------------------------
-    class DirsTab(ScrollMixin, TabPane):
+    class DirsTab(TabPane):
+        BINDINGS = [
+            ('j', 'scroll_dn', 'Scroll ▼'),
+            ('k', 'scroll_up', 'Scroll ▲'),
+            ('pagedown', 'page_dn', 'PgDn'),
+            ('pageup',   'page_up', 'PgUp'),
+        ]
+        _step: int = 1
+        _mode: str = 'basic'
+        _opts: list = []
+
         def compose(self) -> ComposeResult:
-            opts = _preset_options('open_director') or _preset_options('director')
-            if not opts:
-                opts = [('(no open-directory presets found)', '')]
-            with VerticalScroll():
+            self._opts = _preset_options('open_director') or _preset_options('director')
+            if not self._opts:
+                self._opts = [('(no open-directory presets found)', '')]
+            with VerticalScroll(id='dir-scroll'):
                 yield Label('\U0001f4c2 Open Directory Finder', classes='section-title')
-                with Vertical(classes='wizard-box', id='dir-s1'):
-                    yield Label('Step 1 \u2014 Mode', classes='step-label')
-                    with RadioSet(id='dir-mode'):
-                        yield RadioButton('Basic  \u2014 one-click preset', value=True)
-                        yield RadioButton('Advanced \u2014 preset + filters')
-                    yield Button('Next \u2192', id='dir-s1-next')
-                with Vertical(classes='wizard-box hidden', id='dir-s2'):
-                    yield Label('Step 2 \u2014 Pick Preset', classes='step-label')
-                    yield Select(opts, id='dir-preset')
-                    yield Horizontal(
-                        Button('\u2190 Back', id='dir-s2-back', classes='secondary'),
-                        Button('Next \u2192', id='dir-s2-next'),
-                    )
-                with Vertical(classes='wizard-box hidden', id='dir-s3'):
-                    yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
-                    yield Label('Keywords:', classes='hint')
-                    yield Input(placeholder='mp4 movies 2024  (optional)', id='dir-kw')
-                    yield Label('intitle:', classes='hint')
-                    yield Input(placeholder='index of  (optional)', id='dir-intitle')
-                    yield Label('intext:', classes='hint')
-                    yield Input(placeholder='password  (optional)', id='dir-intext')
-                    yield Label('filetype:', classes='hint')
-                    yield Input(placeholder='pdf  (optional)', id='dir-filetype')
-                    yield Label('Exclude:', classes='hint')
-                    yield Input(placeholder='-login -admin  (optional)', id='dir-minus')
-                    yield Horizontal(
-                        Button('\u2190 Back', id='dir-s3-back', classes='secondary'),
-                        Button('\u26a1 Generate', id='dir-generate'),
-                    )
+                yield self._render_step()
                 yield Label('\U0001f50d Dork Preview', classes='section-title')
                 yield DorkPreview(id='preview-dirs', classes='preview-box')
                 yield Button('\U0001f4cb Copy', id='dir-copy', classes='copy')
 
-        def _mode(self) -> str:
-            rs = self.query_one('#dir-mode', RadioSet)
-            return 'advanced' if rs.pressed_index == 1 else 'basic'
+        def _render_step(self):
+            if self._step == 1: return self._step1()
+            if self._step == 2: return self._step2()
+            return self._step3()
 
-        @on(Button.Pressed, '#dir-s1-next')
-        def s1_next(self): self._go(2)
-        @on(Button.Pressed, '#dir-s2-back')
-        def s2_back(self): self._go(1)
-        @on(Button.Pressed, '#dir-s2-next')
-        def s2_next(self):
-            if self._mode() == 'basic': self._generate()
-            else: self._go(3)
-        @on(Button.Pressed, '#dir-s3-back')
-        def s3_back(self): self._go(2)
+        def _step1(self):
+            box = Vertical(classes='wizard-box', id='dir-box')
+            box.compose_add_child(Label('Step 1 \u2014 Mode', classes='step-label'))
+            rs = RadioSet(id='dir-mode')
+            rs.compose_add_child(RadioButton('Basic  \u2014 one-click preset', value=True))
+            rs.compose_add_child(RadioButton('Advanced \u2014 preset + filters'))
+            box.compose_add_child(rs)
+            box.compose_add_child(Button('Next \u2192', id='dir-next'))
+            return box
+
+        def _step2(self):
+            box = Vertical(classes='wizard-box', id='dir-box')
+            box.compose_add_child(Label('Step 2 \u2014 Pick Preset', classes='step-label'))
+            box.compose_add_child(Select(self._opts, id='dir-preset'))
+            row = Horizontal()
+            row.compose_add_child(Button('\u2190 Back', id='dir-back', classes='secondary'))
+            row.compose_add_child(Button('Next \u2192', id='dir-next'))
+            box.compose_add_child(row)
+            return box
+
+        def _step3(self):
+            box = Vertical(classes='wizard-box', id='dir-box')
+            box.compose_add_child(Label('Step 3 \u2014 Filters (Advanced)', classes='step-label'))
+            for lbl, pid, ph in [
+                ('Keywords:',  'dir-kw',      'mp4 movies 2024  (optional)'),
+                ('intitle:',   'dir-intitle', 'index of  (optional)'),
+                ('intext:',    'dir-intext',  'password  (optional)'),
+                ('filetype:',  'dir-filetype','pdf  (optional)'),
+                ('Exclude:',   'dir-minus',   '-login -admin  (optional)'),
+            ]:
+                box.compose_add_child(Label(lbl, classes='hint'))
+                box.compose_add_child(Input(placeholder=ph, id=pid))
+            row = Horizontal()
+            row.compose_add_child(Button('\u2190 Back', id='dir-back', classes='secondary'))
+            row.compose_add_child(Button('\u26a1 Generate', id='dir-generate'))
+            box.compose_add_child(row)
+            return box
+
+        def _get_mode(self):
+            try:
+                rs = self.query_one('#dir-mode', RadioSet)
+                return 'advanced' if rs.pressed_index == 1 else 'basic'
+            except Exception:
+                return 'basic'
+
+        def _refresh(self):
+            scroll = self.query_one('#dir-scroll', VerticalScroll)
+            try:
+                self.query_one('#dir-box').remove()
+            except Exception:
+                pass
+            title = self.query_one('.section-title')
+            scroll.mount(self._render_step(), before=title)
+            scroll.scroll_home(animate=False)
+
+        @on(Button.Pressed, '#dir-next')
+        def _next(self):
+            if self._step == 1:
+                if self._get_mode() == 'basic':
+                    self._step = 2
+                    self._refresh()
+                    self._generate()
+                    return
+                self._step = 2
+            elif self._step == 2:
+                self._step = 3
+            self._refresh()
+
+        @on(Button.Pressed, '#dir-back')
+        def _back(self):
+            if self._step > 1: self._step -= 1
+            self._refresh()
+
         @on(Button.Pressed, '#dir-generate')
         def do_generate(self): self._generate()
 
         def _generate(self):
-            pid = self.query_one('#dir-preset', Select).value
-            ops = {}
-            kw = []
-            if self._mode() == 'advanced':
-                raw = self.query_one('#dir-kw', Input).value.strip()
-                kw = [k for k in raw.split() if k]
+            try:
+                pid = self.query_one('#dir-preset', Select).value
+            except Exception:
+                pid = None
+            ops, kw = {}, []
+            if self._get_mode() == 'advanced':
+                try:
+                    raw = self.query_one('#dir-kw', Input).value.strip()
+                    kw = [k for k in raw.split() if k]
+                except Exception:
+                    pass
                 for oid in ['intitle','intext','filetype']:
-                    v = self.query_one(f'#dir-{oid}', Input).value.strip()
-                    if v: ops[oid] = v
-                minus = self.query_one('#dir-minus', Input).value.strip()
-                if minus: ops['exclude'] = minus
+                    try:
+                        v = self.query_one(f'#dir-{oid}', Input).value.strip()
+                        if v: ops[oid] = v
+                    except Exception:
+                        pass
+                try:
+                    minus = self.query_one('#dir-minus', Input).value.strip()
+                    if minus: ops['exclude'] = minus
+                except Exception:
+                    pass
             dork = assemble_dork(keywords=kw, operators=ops, preset_id=pid if pid else None)
             self.query_one('#preview-dirs', DorkPreview).dork = dork
 
@@ -282,84 +345,139 @@ else:
                 except ImportError:
                     self.app.notify('pip install pyperclip to enable copy')
 
-        def _go(self, step: int):
-            for s in [1, 2, 3]:
-                w = self.query_one(f'#dir-s{s}')
-                if s == step: w.remove_class('hidden')
-                else: w.add_class('hidden')
-            self.query_one(VerticalScroll).scroll_home(animate=False)
+        def action_scroll_dn(self): self.query_one('#dir-scroll', VerticalScroll).scroll_down()
+        def action_scroll_up(self): self.query_one('#dir-scroll', VerticalScroll).scroll_up()
+        def action_page_dn(self):   self.query_one('#dir-scroll', VerticalScroll).scroll_page_down()
+        def action_page_up(self):   self.query_one('#dir-scroll', VerticalScroll).scroll_page_up()
 
 
     # ---- Files Tab --------------------------------------------------------------
-    class FilesTab(ScrollMixin, TabPane):
+    class FilesTab(TabPane):
+        BINDINGS = [
+            ('j', 'scroll_dn', 'Scroll ▼'),
+            ('k', 'scroll_up', 'Scroll ▲'),
+            ('pagedown', 'page_dn', 'PgDn'),
+            ('pageup',   'page_up', 'PgUp'),
+        ]
+        _step: int = 1
+        _mode: str = 'basic'
+        _opts: list = []
+
         def compose(self) -> ComposeResult:
-            opts = _preset_options('exposed_file') or _preset_options('file')
-            if not opts:
-                opts = [('(no file presets found)', '')]
-            with VerticalScroll():
+            self._opts = _preset_options('exposed_file') or _preset_options('file')
+            if not self._opts:
+                self._opts = [('(no file presets found)', '')]
+            with VerticalScroll(id='ff-scroll'):
                 yield Label('\U0001f4c4 File Finder', classes='section-title')
-                with Vertical(classes='wizard-box', id='ff-s1'):
-                    yield Label('Step 1 \u2014 Mode', classes='step-label')
-                    with RadioSet(id='ff-mode'):
-                        yield RadioButton('Basic  \u2014 one-click preset', value=True)
-                        yield RadioButton('Advanced \u2014 preset + filters')
-                    yield Button('Next \u2192', id='ff-s1-next')
-                with Vertical(classes='wizard-box hidden', id='ff-s2'):
-                    yield Label('Step 2 \u2014 Pick File Type', classes='step-label')
-                    yield Select(opts, id='ff-preset')
-                    yield Horizontal(
-                        Button('\u2190 Back', id='ff-s2-back', classes='secondary'),
-                        Button('Next \u2192', id='ff-s2-next'),
-                    )
-                with Vertical(classes='wizard-box hidden', id='ff-s3'):
-                    yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
-                    yield Label('Keywords:', classes='hint')
-                    yield Input(placeholder='password username  (optional)', id='ff-kw')
-                    yield Label('intext:', classes='hint')
-                    yield Input(placeholder='confidential  (optional)', id='ff-intext')
-                    yield Label('inurl:', classes='hint')
-                    yield Input(placeholder='admin  (optional)', id='ff-inurl')
-                    yield Label('filetype override:', classes='hint')
-                    yield Input(placeholder='xls pdf  (optional)', id='ff-filetype')
-                    yield Label('Exclude:', classes='hint')
-                    yield Input(placeholder='-login -signup  (optional)', id='ff-minus')
-                    yield Horizontal(
-                        Button('\u2190 Back', id='ff-s3-back', classes='secondary'),
-                        Button('\u26a1 Generate', id='ff-generate'),
-                    )
+                yield self._render_step()
                 yield Label('\U0001f50d Dork Preview', classes='section-title')
                 yield DorkPreview(id='preview-files', classes='preview-box')
                 yield Button('\U0001f4cb Copy', id='ff-copy', classes='copy')
 
-        def _mode(self) -> str:
-            rs = self.query_one('#ff-mode', RadioSet)
-            return 'advanced' if rs.pressed_index == 1 else 'basic'
+        def _render_step(self):
+            if self._step == 1: return self._step1()
+            if self._step == 2: return self._step2()
+            return self._step3()
 
-        @on(Button.Pressed, '#ff-s1-next')
-        def s1_next(self): self._go(2)
-        @on(Button.Pressed, '#ff-s2-back')
-        def s2_back(self): self._go(1)
-        @on(Button.Pressed, '#ff-s2-next')
-        def s2_next(self):
-            if self._mode() == 'basic': self._generate()
-            else: self._go(3)
-        @on(Button.Pressed, '#ff-s3-back')
-        def s3_back(self): self._go(2)
+        def _step1(self):
+            box = Vertical(classes='wizard-box', id='ff-box')
+            box.compose_add_child(Label('Step 1 \u2014 Mode', classes='step-label'))
+            rs = RadioSet(id='ff-mode')
+            rs.compose_add_child(RadioButton('Basic  \u2014 one-click preset', value=True))
+            rs.compose_add_child(RadioButton('Advanced \u2014 preset + filters'))
+            box.compose_add_child(rs)
+            box.compose_add_child(Button('Next \u2192', id='ff-next'))
+            return box
+
+        def _step2(self):
+            box = Vertical(classes='wizard-box', id='ff-box')
+            box.compose_add_child(Label('Step 2 \u2014 Pick File Type', classes='step-label'))
+            box.compose_add_child(Select(self._opts, id='ff-preset'))
+            row = Horizontal()
+            row.compose_add_child(Button('\u2190 Back', id='ff-back', classes='secondary'))
+            row.compose_add_child(Button('Next \u2192', id='ff-next'))
+            box.compose_add_child(row)
+            return box
+
+        def _step3(self):
+            box = Vertical(classes='wizard-box', id='ff-box')
+            box.compose_add_child(Label('Step 3 \u2014 Filters (Advanced)', classes='step-label'))
+            for lbl, pid, ph in [
+                ('Keywords:',         'ff-kw',      'password username  (optional)'),
+                ('intext:',           'ff-intext',  'confidential  (optional)'),
+                ('inurl:',            'ff-inurl',   'admin  (optional)'),
+                ('filetype override:','ff-filetype','xls pdf  (optional)'),
+                ('Exclude:',          'ff-minus',   '-login -signup  (optional)'),
+            ]:
+                box.compose_add_child(Label(lbl, classes='hint'))
+                box.compose_add_child(Input(placeholder=ph, id=pid))
+            row = Horizontal()
+            row.compose_add_child(Button('\u2190 Back', id='ff-back', classes='secondary'))
+            row.compose_add_child(Button('\u26a1 Generate', id='ff-generate'))
+            box.compose_add_child(row)
+            return box
+
+        def _get_mode(self):
+            try:
+                rs = self.query_one('#ff-mode', RadioSet)
+                return 'advanced' if rs.pressed_index == 1 else 'basic'
+            except Exception:
+                return 'basic'
+
+        def _refresh(self):
+            scroll = self.query_one('#ff-scroll', VerticalScroll)
+            try:
+                self.query_one('#ff-box').remove()
+            except Exception:
+                pass
+            title = self.query_one('.section-title')
+            scroll.mount(self._render_step(), before=title)
+            scroll.scroll_home(animate=False)
+
+        @on(Button.Pressed, '#ff-next')
+        def _next(self):
+            if self._step == 1:
+                if self._get_mode() == 'basic':
+                    self._step = 2
+                    self._refresh()
+                    self._generate()
+                    return
+                self._step = 2
+            elif self._step == 2:
+                self._step = 3
+            self._refresh()
+
+        @on(Button.Pressed, '#ff-back')
+        def _back(self):
+            if self._step > 1: self._step -= 1
+            self._refresh()
+
         @on(Button.Pressed, '#ff-generate')
         def do_generate(self): self._generate()
 
         def _generate(self):
-            pid = self.query_one('#ff-preset', Select).value
-            ops = {}
-            kw = []
-            if self._mode() == 'advanced':
-                raw = self.query_one('#ff-kw', Input).value.strip()
-                kw = [k for k in raw.split() if k]
+            try:
+                pid = self.query_one('#ff-preset', Select).value
+            except Exception:
+                pid = None
+            ops, kw = {}, []
+            if self._get_mode() == 'advanced':
+                try:
+                    raw = self.query_one('#ff-kw', Input).value.strip()
+                    kw = [k for k in raw.split() if k]
+                except Exception:
+                    pass
                 for oid in ['intext','inurl','filetype']:
-                    v = self.query_one(f'#ff-{oid}', Input).value.strip()
-                    if v: ops[oid] = v
-                minus = self.query_one('#ff-minus', Input).value.strip()
-                if minus: ops['exclude'] = minus
+                    try:
+                        v = self.query_one(f'#ff-{oid}', Input).value.strip()
+                        if v: ops[oid] = v
+                    except Exception:
+                        pass
+                try:
+                    minus = self.query_one('#ff-minus', Input).value.strip()
+                    if minus: ops['exclude'] = minus
+                except Exception:
+                    pass
             dork = assemble_dork(keywords=kw, operators=ops, preset_id=pid if pid else None)
             self.query_one('#preview-files', DorkPreview).dork = dork
 
@@ -373,18 +491,23 @@ else:
                 except ImportError:
                     self.app.notify('pip install pyperclip to enable copy')
 
-        def _go(self, step: int):
-            for s in [1, 2, 3]:
-                w = self.query_one(f'#ff-s{s}')
-                if s == step: w.remove_class('hidden')
-                else: w.add_class('hidden')
-            self.query_one(VerticalScroll).scroll_home(animate=False)
+        def action_scroll_dn(self): self.query_one('#ff-scroll', VerticalScroll).scroll_down()
+        def action_scroll_up(self): self.query_one('#ff-scroll', VerticalScroll).scroll_up()
+        def action_page_dn(self):   self.query_one('#ff-scroll', VerticalScroll).scroll_page_down()
+        def action_page_up(self):   self.query_one('#ff-scroll', VerticalScroll).scroll_page_up()
 
 
     # ---- Presets Tab ------------------------------------------------------------
-    class PresetsTab(ScrollMixin, TabPane):
+    class PresetsTab(TabPane):
+        BINDINGS = [
+            ('j', 'scroll_dn', 'Scroll ▼'),
+            ('k', 'scroll_up', 'Scroll ▲'),
+            ('pagedown', 'page_dn', 'PgDn'),
+            ('pageup',   'page_up', 'PgUp'),
+        ]
+
         def compose(self) -> ComposeResult:
-            with VerticalScroll():
+            with VerticalScroll(id='pre-scroll'):
                 presets = load_presets()
                 yield Label('\u2b50 Preset Browser', classes='section-title')
                 yield Label('Select a preset to load it into the preview.', classes='hint')
@@ -415,6 +538,11 @@ else:
                     self.app.notify('Copied!')
                 except ImportError:
                     self.app.notify('pip install pyperclip to enable copy')
+
+        def action_scroll_dn(self): self.query_one('#pre-scroll', VerticalScroll).scroll_down()
+        def action_scroll_up(self): self.query_one('#pre-scroll', VerticalScroll).scroll_up()
+        def action_page_dn(self):   self.query_one('#pre-scroll', VerticalScroll).scroll_page_down()
+        def action_page_up(self):   self.query_one('#pre-scroll', VerticalScroll).scroll_page_up()
 
 
     # ---- Main App ---------------------------------------------------------------
