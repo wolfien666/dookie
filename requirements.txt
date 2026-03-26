@@ -1,0 +1,6 @@
+art
+rich
+loguru
+requests
+Flask
+pyperclip
