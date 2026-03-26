@@ -16,7 +16,7 @@ try:
         Header, Footer, TabbedContent, TabPane,
         Input, Button, Select, Label, Static, RadioButton, RadioSet
     )
-    from textual.containers import Vertical, Horizontal, Container
+    from textual.containers import Vertical, Horizontal, Container, VerticalScroll
     from textual.reactive import reactive
     from textual import on
     _HAS_TEXTUAL = True
@@ -57,7 +57,8 @@ else:
     Header { background: #1a0030; color: #b44fff; }
     Footer { background: #0d0d0d; }
     TabbedContent { background: #0d0d0d; }
-    TabPane { padding: 1 2; }
+    TabPane { padding: 0; }
+    VerticalScroll { padding: 1 2; }
     .wizard-box { border: solid #2a2a2a; padding: 1 2; margin-bottom: 1; }
     .preview-box { border: solid #39ff14; background: #0a1a0a;
                    padding: 1 2; margin-top: 1; color: #39ff14;
@@ -98,40 +99,41 @@ else:
         _ops: dict = {}
 
         def compose(self) -> ComposeResult:
-            yield Label('\u2731 Keyword + Operator Builder', classes='section-title')
-            with Vertical(classes='wizard-box', id='bld-s1'):
-                yield Label('Step 1 \u2014 Keywords', classes='step-label')
-                yield Label('What are you hunting for?', classes='hint')
-                yield Input(placeholder='e.g. admin login database', id='bld-kw')
-                yield Button('Next \u2192', id='bld-s1-next')
-            with Vertical(classes='wizard-box hidden', id='bld-s2'):
-                yield Label('Step 2 \u2014 Mode', classes='step-label')
-                with RadioSet(id='bld-mode'):
-                    yield RadioButton('Basic  \u2014 site, intitle, filetype, intext', value=True, id='bld-basic')
-                    yield RadioButton('Advanced \u2014 full operator picker', id='bld-adv')
-                yield Horizontal(
-                    Button('\u2190 Back', id='bld-s2-back', classes='secondary'),
-                    Button('Next \u2192', id='bld-s2-next'),
-                )
-            with Vertical(classes='wizard-box hidden', id='bld-s3'):
-                yield Label('Step 3 \u2014 Operators', classes='step-label')
-                yield Label('site:', classes='hint')
-                yield Input(placeholder='example.com', id='bop-site')
-                yield Label('intitle:', classes='hint')
-                yield Input(placeholder='index of', id='bop-intitle')
-                yield Label('filetype:', classes='hint')
-                yield Input(placeholder='pdf', id='bop-filetype')
-                yield Label('intext:', classes='hint')
-                yield Input(placeholder='password', id='bop-intext')
-                yield Label('Exclude (-term):', classes='hint')
-                yield Input(placeholder='login,admin', id='bop-minus')
-                yield Horizontal(
-                    Button('\u2190 Back', id='bld-s3-back', classes='secondary'),
-                    Button('\u26a1 Generate', id='bld-generate'),
-                )
-            yield Label('\U0001f50d Dork Preview', classes='section-title')
-            yield DorkPreview(id='preview-builder', classes='preview-box')
-            yield Button('\U0001f4cb Copy', id='bld-copy', classes='copy')
+            with VerticalScroll():
+                yield Label('\u2731 Keyword + Operator Builder', classes='section-title')
+                with Vertical(classes='wizard-box', id='bld-s1'):
+                    yield Label('Step 1 \u2014 Keywords', classes='step-label')
+                    yield Label('What are you hunting for?', classes='hint')
+                    yield Input(placeholder='e.g. admin login database', id='bld-kw')
+                    yield Button('Next \u2192', id='bld-s1-next')
+                with Vertical(classes='wizard-box hidden', id='bld-s2'):
+                    yield Label('Step 2 \u2014 Mode', classes='step-label')
+                    with RadioSet(id='bld-mode'):
+                        yield RadioButton('Basic  \u2014 site, intitle, filetype, intext', value=True, id='bld-basic')
+                        yield RadioButton('Advanced \u2014 full operator picker', id='bld-adv')
+                    yield Horizontal(
+                        Button('\u2190 Back', id='bld-s2-back', classes='secondary'),
+                        Button('Next \u2192', id='bld-s2-next'),
+                    )
+                with Vertical(classes='wizard-box hidden', id='bld-s3'):
+                    yield Label('Step 3 \u2014 Operators', classes='step-label')
+                    yield Label('site:', classes='hint')
+                    yield Input(placeholder='example.com', id='bop-site')
+                    yield Label('intitle:', classes='hint')
+                    yield Input(placeholder='index of', id='bop-intitle')
+                    yield Label('filetype:', classes='hint')
+                    yield Input(placeholder='pdf', id='bop-filetype')
+                    yield Label('intext:', classes='hint')
+                    yield Input(placeholder='password', id='bop-intext')
+                    yield Label('Exclude (-term):', classes='hint')
+                    yield Input(placeholder='login,admin', id='bop-minus')
+                    yield Horizontal(
+                        Button('\u2190 Back', id='bld-s3-back', classes='secondary'),
+                        Button('\u26a1 Generate', id='bld-generate'),
+                    )
+                yield Label('\U0001f50d Dork Preview', classes='section-title')
+                yield DorkPreview(id='preview-builder', classes='preview-box')
+                yield Button('\U0001f4cb Copy', id='bld-copy', classes='copy')
 
         @on(Button.Pressed, '#bld-s1-next')
         def step1_next(self): self._go(2)
@@ -182,39 +184,40 @@ else:
             opts = _preset_options('open_director') or _preset_options('director')
             if not opts:
                 opts = [('(no open-directory presets found)', '')]
-            yield Label('\U0001f4c2 Open Directory Finder', classes='section-title')
-            with Vertical(classes='wizard-box', id='dir-s1'):
-                yield Label('Step 1 \u2014 Mode', classes='step-label')
-                with RadioSet(id='dir-mode'):
-                    yield RadioButton('Basic  \u2014 one-click preset', value=True)
-                    yield RadioButton('Advanced \u2014 preset + filters')
-                yield Button('Next \u2192', id='dir-s1-next')
-            with Vertical(classes='wizard-box hidden', id='dir-s2'):
-                yield Label('Step 2 \u2014 Pick Preset', classes='step-label')
-                yield Select(opts, id='dir-preset')
-                yield Horizontal(
-                    Button('\u2190 Back', id='dir-s2-back', classes='secondary'),
-                    Button('Next \u2192', id='dir-s2-next'),
-                )
-            with Vertical(classes='wizard-box hidden', id='dir-s3'):
-                yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
-                yield Label('Keywords:', classes='hint')
-                yield Input(placeholder='mp4 movies 2024', id='dir-kw')
-                yield Label('intitle:', classes='hint')
-                yield Input(id='dir-intitle')
-                yield Label('intext:', classes='hint')
-                yield Input(id='dir-intext')
-                yield Label('filetype:', classes='hint')
-                yield Input(id='dir-filetype')
-                yield Label('Exclude:', classes='hint')
-                yield Input(id='dir-minus')
-                yield Horizontal(
-                    Button('\u2190 Back', id='dir-s3-back', classes='secondary'),
-                    Button('\u26a1 Generate', id='dir-generate'),
-                )
-            yield Label('\U0001f50d Dork Preview', classes='section-title')
-            yield DorkPreview(id='preview-dirs', classes='preview-box')
-            yield Button('\U0001f4cb Copy', id='dir-copy', classes='copy')
+            with VerticalScroll():
+                yield Label('\U0001f4c2 Open Directory Finder', classes='section-title')
+                with Vertical(classes='wizard-box', id='dir-s1'):
+                    yield Label('Step 1 \u2014 Mode', classes='step-label')
+                    with RadioSet(id='dir-mode'):
+                        yield RadioButton('Basic  \u2014 one-click preset', value=True)
+                        yield RadioButton('Advanced \u2014 preset + filters')
+                    yield Button('Next \u2192', id='dir-s1-next')
+                with Vertical(classes='wizard-box hidden', id='dir-s2'):
+                    yield Label('Step 2 \u2014 Pick Preset', classes='step-label')
+                    yield Select(opts, id='dir-preset')
+                    yield Horizontal(
+                        Button('\u2190 Back', id='dir-s2-back', classes='secondary'),
+                        Button('Next \u2192', id='dir-s2-next'),
+                    )
+                with Vertical(classes='wizard-box hidden', id='dir-s3'):
+                    yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
+                    yield Label('Keywords:', classes='hint')
+                    yield Input(placeholder='mp4 movies 2024', id='dir-kw')
+                    yield Label('intitle:', classes='hint')
+                    yield Input(id='dir-intitle')
+                    yield Label('intext:', classes='hint')
+                    yield Input(id='dir-intext')
+                    yield Label('filetype:', classes='hint')
+                    yield Input(id='dir-filetype')
+                    yield Label('Exclude:', classes='hint')
+                    yield Input(id='dir-minus')
+                    yield Horizontal(
+                        Button('\u2190 Back', id='dir-s3-back', classes='secondary'),
+                        Button('\u26a1 Generate', id='dir-generate'),
+                    )
+                yield Label('\U0001f50d Dork Preview', classes='section-title')
+                yield DorkPreview(id='preview-dirs', classes='preview-box')
+                yield Button('\U0001f4cb Copy', id='dir-copy', classes='copy')
 
         def _mode(self) -> str:
             rs = self.query_one('#dir-mode', RadioSet)
@@ -280,39 +283,40 @@ else:
             opts = _preset_options('exposed_file') or _preset_options('file')
             if not opts:
                 opts = [('(no file presets found)', '')]
-            yield Label('\U0001f4c4 File Finder', classes='section-title')
-            with Vertical(classes='wizard-box', id='ff-s1'):
-                yield Label('Step 1 \u2014 Mode', classes='step-label')
-                with RadioSet(id='ff-mode'):
-                    yield RadioButton('Basic  \u2014 one-click preset', value=True)
-                    yield RadioButton('Advanced \u2014 preset + filters')
-                yield Button('Next \u2192', id='ff-s1-next')
-            with Vertical(classes='wizard-box hidden', id='ff-s2'):
-                yield Label('Step 2 \u2014 Pick File Type', classes='step-label')
-                yield Select(opts, id='ff-preset')
-                yield Horizontal(
-                    Button('\u2190 Back', id='ff-s2-back', classes='secondary'),
-                    Button('Next \u2192', id='ff-s2-next'),
-                )
-            with Vertical(classes='wizard-box hidden', id='ff-s3'):
-                yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
-                yield Label('Keywords:', classes='hint')
-                yield Input(placeholder='password username', id='ff-kw')
-                yield Label('intext:', classes='hint')
-                yield Input(id='ff-intext')
-                yield Label('inurl:', classes='hint')
-                yield Input(id='ff-inurl')
-                yield Label('filetype override:', classes='hint')
-                yield Input(id='ff-filetype')
-                yield Label('Exclude:', classes='hint')
-                yield Input(id='ff-minus')
-                yield Horizontal(
-                    Button('\u2190 Back', id='ff-s3-back', classes='secondary'),
-                    Button('\u26a1 Generate', id='ff-generate'),
-                )
-            yield Label('\U0001f50d Dork Preview', classes='section-title')
-            yield DorkPreview(id='preview-files', classes='preview-box')
-            yield Button('\U0001f4cb Copy', id='ff-copy', classes='copy')
+            with VerticalScroll():
+                yield Label('\U0001f4c4 File Finder', classes='section-title')
+                with Vertical(classes='wizard-box', id='ff-s1'):
+                    yield Label('Step 1 \u2014 Mode', classes='step-label')
+                    with RadioSet(id='ff-mode'):
+                        yield RadioButton('Basic  \u2014 one-click preset', value=True)
+                        yield RadioButton('Advanced \u2014 preset + filters')
+                    yield Button('Next \u2192', id='ff-s1-next')
+                with Vertical(classes='wizard-box hidden', id='ff-s2'):
+                    yield Label('Step 2 \u2014 Pick File Type', classes='step-label')
+                    yield Select(opts, id='ff-preset')
+                    yield Horizontal(
+                        Button('\u2190 Back', id='ff-s2-back', classes='secondary'),
+                        Button('Next \u2192', id='ff-s2-next'),
+                    )
+                with Vertical(classes='wizard-box hidden', id='ff-s3'):
+                    yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
+                    yield Label('Keywords:', classes='hint')
+                    yield Input(placeholder='password username', id='ff-kw')
+                    yield Label('intext:', classes='hint')
+                    yield Input(id='ff-intext')
+                    yield Label('inurl:', classes='hint')
+                    yield Input(id='ff-inurl')
+                    yield Label('filetype override:', classes='hint')
+                    yield Input(id='ff-filetype')
+                    yield Label('Exclude:', classes='hint')
+                    yield Input(id='ff-minus')
+                    yield Horizontal(
+                        Button('\u2190 Back', id='ff-s3-back', classes='secondary'),
+                        Button('\u26a1 Generate', id='ff-generate'),
+                    )
+                yield Label('\U0001f50d Dork Preview', classes='section-title')
+                yield DorkPreview(id='preview-files', classes='preview-box')
+                yield Button('\U0001f4cb Copy', id='ff-copy', classes='copy')
 
         def _mode(self) -> str:
             rs = self.query_one('#ff-mode', RadioSet)
@@ -374,15 +378,16 @@ else:
     # ---- Presets Tab ------------------------------------------------------------
     class PresetsTab(TabPane):
         def compose(self) -> ComposeResult:
-            presets = load_presets()
-            yield Label('\u2b50 Preset Browser', classes='section-title')
-            yield Label('Select a preset to load it into the preview.', classes='hint')
-            opts = [(f"{p['category_label']} \u2014 {p['name']}", p['id']) for p in presets]
-            yield Select(opts, id='all-preset')
-            yield Button('\u26a1 Load Preset', id='preset-load')
-            yield Label('\U0001f50d Dork Preview', classes='section-title')
-            yield DorkPreview(id='preview-presets', classes='preview-box')
-            yield Button('\U0001f4cb Copy', id='preset-copy', classes='copy')
+            with VerticalScroll():
+                presets = load_presets()
+                yield Label('\u2b50 Preset Browser', classes='section-title')
+                yield Label('Select a preset to load it into the preview.', classes='hint')
+                opts = [(f"{p['category_label']} \u2014 {p['name']}", p['id']) for p in presets]
+                yield Select(opts, id='all-preset')
+                yield Button('\u26a1 Load Preset', id='preset-load')
+                yield Label('\U0001f50d Dork Preview', classes='section-title')
+                yield DorkPreview(id='preview-presets', classes='preview-box')
+                yield Button('\U0001f4cb Copy', id='preset-copy', classes='copy')
 
         @on(Button.Pressed, '#preset-load')
         def load_preset(self):
@@ -392,7 +397,7 @@ else:
             if preset:
                 dork = preset['template']
                 if preset.get('requires_target'):
-                    self.app.notify('This preset needs a TARGET — edit the dork manually.')
+                    self.app.notify('This preset needs a TARGET \u2014 edit the dork manually.')
                 self.query_one('#preview-presets', DorkPreview).dork = dork
 
         @on(Button.Pressed, '#preset-copy')
