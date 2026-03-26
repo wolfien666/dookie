@@ -1,0 +1,336 @@
+{
+  "presets": [
+    {
+      "id": "open_dir_generic",
+      "category": "Open Directories",
+      "name": "Generic Open Directory",
+      "description": "Find any open/exposed web directory listing",
+      "dork": "intitle:\"index of /\"",
+      "tags": ["directory", "listing", "open"]
+    },
+    {
+      "id": "open_dir_parent",
+      "category": "Open Directories",
+      "name": "Open Directory with Parent",
+      "description": "Classic open directory with parent directory link visible",
+      "dork": "intitle:\"index of\" \"parent directory\"",
+      "tags": ["directory", "listing", "classic"]
+    },
+    {
+      "id": "open_dir_videos",
+      "category": "Open Directories",
+      "name": "Open Directory - Videos",
+      "description": "Open directories containing video files",
+      "dork": "intitle:\"index of /\" (mp4 OR mkv OR avi OR mov)",
+      "tags": ["directory", "video", "media"]
+    },
+    {
+      "id": "open_dir_audio",
+      "category": "Open Directories",
+      "name": "Open Directory - Audio",
+      "description": "Open directories containing audio files",
+      "dork": "intitle:\"index of /\" (mp3 OR flac OR wav OR ogg)",
+      "tags": ["directory", "audio", "music"]
+    },
+    {
+      "id": "open_dir_images",
+      "category": "Open Directories",
+      "name": "Open Directory - Images",
+      "description": "Open directories containing image files",
+      "dork": "intitle:\"index of /\" (jpg OR jpeg OR png OR gif OR raw)",
+      "tags": ["directory", "images", "photos"]
+    },
+    {
+      "id": "open_dir_docs",
+      "category": "Open Directories",
+      "name": "Open Directory - Documents",
+      "description": "Open directories containing document files",
+      "dork": "intitle:\"index of /\" (pdf OR doc OR docx OR xls OR xlsx)",
+      "tags": ["directory", "documents", "files"]
+    },
+    {
+      "id": "open_dir_backup",
+      "category": "Open Directories",
+      "name": "Open Directory - Backups",
+      "description": "Open directories containing backup files",
+      "dork": "intitle:\"index of /\" (bak OR backup OR old OR zip OR tar.gz)",
+      "tags": ["directory", "backup", "sensitive"]
+    },
+    {
+      "id": "open_dir_config",
+      "category": "Open Directories",
+      "name": "Open Directory - Config Files",
+      "description": "Open directories containing configuration files",
+      "dork": "intitle:\"index of /\" (config OR conf OR ini OR cfg OR env)",
+      "tags": ["directory", "config", "sensitive"]
+    },
+    {
+      "id": "open_dir_gov",
+      "category": "Open Directories",
+      "name": "Open Directory - Government Sites",
+      "description": "Open directories on government domains",
+      "dork": "intitle:\"index of /\" site:.gov",
+      "tags": ["directory", "government", "tld"]
+    },
+    {
+      "id": "open_dir_edu",
+      "category": "Open Directories",
+      "name": "Open Directory - Education Sites",
+      "description": "Open directories on educational institution domains",
+      "dork": "intitle:\"index of /\" site:.edu",
+      "tags": ["directory", "education", "tld"]
+    },
+    {
+      "id": "open_dir_apache",
+      "category": "Open Directories",
+      "name": "Apache Directory Listing",
+      "description": "Apache server auto-generated directory index pages",
+      "dork": "intitle:\"index of\" \"apache\" \"last modified\"",
+      "tags": ["directory", "apache", "server"]
+    },
+    {
+      "id": "open_dir_nginx",
+      "category": "Open Directories",
+      "name": "Nginx Directory Listing",
+      "description": "Nginx server directory listing pages",
+      "dork": "intitle:\"index of\" \"nginx\"",
+      "tags": ["directory", "nginx", "server"]
+    },
+    {
+      "id": "file_env",
+      "category": "Exposed Files",
+      "name": "Exposed .env Files",
+      "description": "Find exposed environment variable files (may contain credentials)",
+      "dork": "filetype:env intext:\"DB_PASSWORD\"",
+      "tags": ["file", "credentials", "env", "sensitive"]
+    },
+    {
+      "id": "file_sql",
+      "category": "Exposed Files",
+      "name": "Exposed SQL Dumps",
+      "description": "Find exposed SQL database dump files",
+      "dork": "filetype:sql intext:\"INSERT INTO\"",
+      "tags": ["file", "database", "sql", "sensitive"]
+    },
+    {
+      "id": "file_log",
+      "category": "Exposed Files",
+      "name": "Exposed Log Files",
+      "description": "Find exposed server or application log files",
+      "dork": "filetype:log intext:\"error\" OR intext:\"warning\"",
+      "tags": ["file", "logs", "server"]
+    },
+    {
+      "id": "file_bak",
+      "category": "Exposed Files",
+      "name": "Backup Files",
+      "description": "Find exposed backup files",
+      "dork": "filetype:bak inurl:\".bak\"",
+      "tags": ["file", "backup", "sensitive"]
+    },
+    {
+      "id": "file_xml_config",
+      "category": "Exposed Files",
+      "name": "XML Config Files",
+      "description": "Find exposed XML configuration files",
+      "dork": "filetype:xml inurl:config",
+      "tags": ["file", "xml", "config"]
+    },
+    {
+      "id": "file_pem_key",
+      "category": "Exposed Files",
+      "name": "SSL Keys / PEM Files",
+      "description": "Find exposed SSL private key files",
+      "dork": "filetype:pem OR filetype:key intext:\"BEGIN\"",
+      "tags": ["file", "ssl", "key", "sensitive"]
+    },
+    {
+      "id": "file_htpasswd",
+      "category": "Exposed Files",
+      "name": "Exposed .htpasswd",
+      "description": "Find exposed Apache password files",
+      "dork": "inurl:.htpasswd filetype:htpasswd",
+      "tags": ["file", "htpasswd", "credentials"]
+    },
+    {
+      "id": "file_wp_config",
+      "category": "Exposed Files",
+      "name": "WordPress Config",
+      "description": "Find exposed WordPress configuration files",
+      "dork": "filetype:txt inurl:wp-config",
+      "tags": ["file", "wordpress", "cms", "config"]
+    },
+    {
+      "id": "file_passwords_txt",
+      "category": "Exposed Files",
+      "name": "Password Text Files",
+      "description": "Find plain text files containing passwords",
+      "dork": "filetype:txt intext:\"password\" intext:\"username\"",
+      "tags": ["file", "passwords", "credentials"]
+    },
+    {
+      "id": "login_admin",
+      "category": "Login Panels",
+      "name": "Generic Admin Login",
+      "description": "Find admin login portals",
+      "dork": "intitle:\"admin login\" OR intitle:\"administrator login\"",
+      "tags": ["login", "admin", "panel"]
+    },
+    {
+      "id": "login_phpmyadmin",
+      "category": "Login Panels",
+      "name": "phpMyAdmin",
+      "description": "Find exposed phpMyAdmin database interfaces",
+      "dork": "intitle:\"phpMyAdmin\" inurl:\"/phpmyadmin\"",
+      "tags": ["login", "phpmyadmin", "database"]
+    },
+    {
+      "id": "login_cpanel",
+      "category": "Login Panels",
+      "name": "cPanel Login",
+      "description": "Find cPanel web hosting login pages",
+      "dork": "intitle:\"cPanel\" inurl:2083 OR inurl:2082",
+      "tags": ["login", "cpanel", "hosting"]
+    },
+    {
+      "id": "login_cisco",
+      "category": "Login Panels",
+      "name": "Cisco Router Login",
+      "description": "Find exposed Cisco router admin interfaces",
+      "dork": "intitle:\"Cisco Systems\" inurl:\"/exec/\"",
+      "tags": ["login", "cisco", "router", "iot"]
+    },
+    {
+      "id": "camera_axis",
+      "category": "IoT & Cameras",
+      "name": "Axis Network Cameras",
+      "description": "Find Axis network cameras with live feeds",
+      "dork": "inurl:\"/view/index.shtml\"",
+      "tags": ["camera", "iot", "axis", "live"]
+    },
+    {
+      "id": "camera_generic",
+      "category": "IoT & Cameras",
+      "name": "Generic IP Camera Feed",
+      "description": "Find generic IP camera web interfaces",
+      "dork": "intitle:\"live view\" inurl:axis OR inurl:view",
+      "tags": ["camera", "iot", "live", "webcam"]
+    },
+    {
+      "id": "camera_netcam",
+      "category": "IoT & Cameras",
+      "name": "Netcam / Webcam Interface",
+      "description": "Find webcam interfaces via URL pattern",
+      "dork": "inurl:\"/mjpg/video.mjpg\"",
+      "tags": ["camera", "webcam", "mjpeg"]
+    },
+    {
+      "id": "error_sql",
+      "category": "Error Messages",
+      "name": "SQL Error Messages",
+      "description": "Find pages exposing SQL syntax errors (indicates injection vulnerability)",
+      "dork": "intext:\"sql syntax error\" OR intext:\"mysql_fetch_array\"",
+      "tags": ["error", "sql", "injection", "vulnerability"]
+    },
+    {
+      "id": "error_php",
+      "category": "Error Messages",
+      "name": "PHP Error Messages",
+      "description": "Find pages with exposed PHP error output",
+      "dork": "intext:\"Fatal error: Uncaught exception\"",
+      "tags": ["error", "php", "debug"]
+    },
+    {
+      "id": "error_stack_trace",
+      "category": "Error Messages",
+      "name": "Stack Trace Exposure",
+      "description": "Find pages leaking application stack traces",
+      "dork": "intext:\"stack trace\" intext:\"at java.lang\"",
+      "tags": ["error", "java", "stack trace", "debug"]
+    },
+    {
+      "id": "subdomain_enum",
+      "category": "Recon & OSINT",
+      "name": "Subdomain Enumeration",
+      "description": "Find all indexed subdomains of a target domain",
+      "dork": "site:*.TARGET.com -www",
+      "tags": ["recon", "subdomain", "osint"],
+      "requires_target": true
+    },
+    {
+      "id": "recon_emails",
+      "category": "Recon & OSINT",
+      "name": "Email Address Harvesting",
+      "description": "Find email addresses on a target site",
+      "dork": "site:TARGET.com intext:\"@TARGET.com\"",
+      "tags": ["recon", "email", "osint"],
+      "requires_target": true
+    },
+    {
+      "id": "recon_linkedin",
+      "category": "Recon & OSINT",
+      "name": "LinkedIn Employee Recon",
+      "description": "Find LinkedIn profiles of employees at a company",
+      "dork": "site:linkedin.com/in \"TARGET\"",
+      "tags": ["recon", "linkedin", "osint"],
+      "requires_target": true
+    },
+    {
+      "id": "recon_github",
+      "category": "Recon & OSINT",
+      "name": "GitHub Code Recon",
+      "description": "Find a company's code repositories and potential leaks on GitHub",
+      "dork": "site:github.com \"TARGET\"",
+      "tags": ["recon", "github", "osint", "code"],
+      "requires_target": true
+    },
+    {
+      "id": "vuln_wordpress",
+      "category": "Vulnerabilities",
+      "name": "WordPress Sites",
+      "description": "Find WordPress-powered sites (can be combined with site:)",
+      "dork": "inurl:\"/wp-content/\" OR inurl:\"/wp-includes/\"",
+      "tags": ["wordpress", "cms", "vulnerability"]
+    },
+    {
+      "id": "vuln_joomla",
+      "category": "Vulnerabilities",
+      "name": "Joomla Sites",
+      "description": "Find Joomla CMS-powered sites",
+      "dork": "inurl:\"/index.php/component/\" intitle:\"Joomla\"",
+      "tags": ["joomla", "cms", "vulnerability"]
+    },
+    {
+      "id": "vuln_drupal",
+      "category": "Vulnerabilities",
+      "name": "Drupal Sites",
+      "description": "Find Drupal CMS-powered sites",
+      "dork": "inurl:\"/sites/default/files/\" intitle:\"Drupal\"",
+      "tags": ["drupal", "cms", "vulnerability"]
+    },
+    {
+      "id": "vuln_api_key",
+      "category": "Vulnerabilities",
+      "name": "Exposed API Keys",
+      "description": "Find pages or files containing exposed API keys",
+      "dork": "intext:\"api_key\" OR intext:\"apikey\" filetype:json OR filetype:yaml",
+      "tags": ["api", "key", "credentials", "sensitive"]
+    },
+    {
+      "id": "doc_confidential",
+      "category": "Sensitive Documents",
+      "name": "Confidential PDFs",
+      "description": "Find PDF documents marked as confidential",
+      "dork": "filetype:pdf intext:\"confidential\" OR intext:\"not for distribution\"",
+      "tags": ["document", "pdf", "confidential"]
+    },
+    {
+      "id": "doc_excel_passwords",
+      "category": "Sensitive Documents",
+      "name": "Excel Files with Passwords",
+      "description": "Find Excel spreadsheets containing password data",
+      "dork": "filetype:xls OR filetype:xlsx intext:\"password\"",
+      "tags": ["document", "excel", "passwords"]
+    }
+  ]
+}
