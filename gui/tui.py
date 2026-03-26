@@ -74,6 +74,7 @@ else:
     Select { background: #1e1e1e; border: solid #2a2a2a; color: #e0e0e0; }
     RadioButton { color: #e0e0e0; }
     .mode-row { height: 3; }
+    .hidden { display: none; }
     """
 
     class DorkPreview(Static):
@@ -103,7 +104,7 @@ else:
                 yield Label('What are you hunting for?', classes='hint')
                 yield Input(placeholder='e.g. admin login database', id='bld-kw')
                 yield Button('Next \u2192', id='bld-s1-next')
-            with Vertical(classes='wizard-box', id='bld-s2', display=False):
+            with Vertical(classes='wizard-box hidden', id='bld-s2'):
                 yield Label('Step 2 \u2014 Mode', classes='step-label')
                 with RadioSet(id='bld-mode'):
                     yield RadioButton('Basic  \u2014 site, intitle, filetype, intext', value=True, id='bld-basic')
@@ -112,7 +113,7 @@ else:
                     Button('\u2190 Back', id='bld-s2-back', classes='secondary'),
                     Button('Next \u2192', id='bld-s2-next'),
                 )
-            with Vertical(classes='wizard-box', id='bld-s3', display=False):
+            with Vertical(classes='wizard-box hidden', id='bld-s3'):
                 yield Label('Step 3 \u2014 Operators', classes='step-label')
                 yield Label('site:', classes='hint')
                 yield Input(placeholder='example.com', id='bop-site')
@@ -168,7 +169,11 @@ else:
 
         def _go(self, step: int):
             for s in [1, 2, 3]:
-                self.query_one(f'#bld-s{s}').display = (s == step)
+                w = self.query_one(f'#bld-s{s}')
+                if s == step:
+                    w.remove_class('hidden')
+                else:
+                    w.add_class('hidden')
 
 
     # ---- Dirs Tab ---------------------------------------------------------------
@@ -184,14 +189,14 @@ else:
                     yield RadioButton('Basic  \u2014 one-click preset', value=True)
                     yield RadioButton('Advanced \u2014 preset + filters')
                 yield Button('Next \u2192', id='dir-s1-next')
-            with Vertical(classes='wizard-box', id='dir-s2', display=False):
+            with Vertical(classes='wizard-box hidden', id='dir-s2'):
                 yield Label('Step 2 \u2014 Pick Preset', classes='step-label')
                 yield Select(opts, id='dir-preset')
                 yield Horizontal(
                     Button('\u2190 Back', id='dir-s2-back', classes='secondary'),
                     Button('Next \u2192', id='dir-s2-next'),
                 )
-            with Vertical(classes='wizard-box', id='dir-s3', display=False):
+            with Vertical(classes='wizard-box hidden', id='dir-s3'):
                 yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
                 yield Label('Keywords:', classes='hint')
                 yield Input(placeholder='mp4 movies 2024', id='dir-kw')
@@ -262,7 +267,11 @@ else:
 
         def _go(self, step: int):
             for s in [1, 2, 3]:
-                self.query_one(f'#dir-s{s}').display = (s == step)
+                w = self.query_one(f'#dir-s{s}')
+                if s == step:
+                    w.remove_class('hidden')
+                else:
+                    w.add_class('hidden')
 
 
     # ---- Files Tab --------------------------------------------------------------
@@ -278,14 +287,14 @@ else:
                     yield RadioButton('Basic  \u2014 one-click preset', value=True)
                     yield RadioButton('Advanced \u2014 preset + filters')
                 yield Button('Next \u2192', id='ff-s1-next')
-            with Vertical(classes='wizard-box', id='ff-s2', display=False):
+            with Vertical(classes='wizard-box hidden', id='ff-s2'):
                 yield Label('Step 2 \u2014 Pick File Type', classes='step-label')
                 yield Select(opts, id='ff-preset')
                 yield Horizontal(
                     Button('\u2190 Back', id='ff-s2-back', classes='secondary'),
                     Button('Next \u2192', id='ff-s2-next'),
                 )
-            with Vertical(classes='wizard-box', id='ff-s3', display=False):
+            with Vertical(classes='wizard-box hidden', id='ff-s3'):
                 yield Label('Step 3 \u2014 Filters (Advanced)', classes='step-label')
                 yield Label('Keywords:', classes='hint')
                 yield Input(placeholder='password username', id='ff-kw')
@@ -355,7 +364,11 @@ else:
 
         def _go(self, step: int):
             for s in [1, 2, 3]:
-                self.query_one(f'#ff-s{s}').display = (s == step)
+                w = self.query_one(f'#ff-s{s}')
+                if s == step:
+                    w.remove_class('hidden')
+                else:
+                    w.add_class('hidden')
 
 
     # ---- Presets Tab ------------------------------------------------------------
