@@ -26,9 +26,7 @@ except ImportError:
 from assembler import assemble_dork, load_operators, load_presets
 
 
-# ---- Fallback: rich-based TUI when textual is not installed -----------------
 def _rich_tui():
-    """Minimal Rich fallback when Textual is not available."""
     from cli.menu import run
     from rich.console import Console
     console = Console()
@@ -41,7 +39,6 @@ if not _HAS_TEXTUAL:
     def run():
         _rich_tui()
 else:
-    # ---- Helpers ----------------------------------------------------------------
     def _preset_options(category_substring: str):
         presets = load_presets()
         matches = [p for p in presets
@@ -79,20 +76,48 @@ else:
     """
 
     class DorkPreview(Static):
-        """Live dork preview widget."""
         dork = reactive('')
-
         def render(self):
             return self.dork if self.dork else '(your dork will appear here)'
 
-
     class WizardStep(Container):
-        """A single wizard step panel."""
         pass
 
+    # ---- Shared scroll mixin ---------------------------------------------------
+    class ScrollMixin:
+        """Adds j/k/PageDown/PageUp scrolling to any TabPane subclass."""
+
+        BINDINGS = [
+            ('j', 'scroll_dn', 'Scroll Down'),
+            ('k', 'scroll_up', 'Scroll Up'),
+            ('pagedown', 'page_dn', 'Page Down'),
+            ('pageup', 'page_up', 'Page Up'),
+        ]
+
+        def _get_scroller(self):
+            try:
+                return self.query_one(VerticalScroll)
+            except Exception:
+                return None
+
+        def action_scroll_dn(self):
+            s = self._get_scroller()
+            if s: s.scroll_down()
+
+        def action_scroll_up(self):
+            s = self._get_scroller()
+            if s: s.scroll_up()
+
+        def action_page_dn(self):
+            s = self._get_scroller()
+            if s: s.scroll_page_down()
+
+        def action_page_up(self):
+            s = self._get_scroller()
+            if s: s.scroll_page_up()
 
     # ---- Builder Tab ------------------------------------------------------------
-    class BuilderTab(TabPane):
+    class BuilderTab(ScrollMixin, TabPane):
         STEP = reactive(1)
         _keywords: str = ''
         _mode: str = 'basic'
@@ -137,13 +162,10 @@ else:
 
         @on(Button.Pressed, '#bld-s1-next')
         def step1_next(self): self._go(2)
-
         @on(Button.Pressed, '#bld-s2-back')
         def step2_back(self): self._go(1)
-
         @on(Button.Pressed, '#bld-s2-next')
         def step2_next(self): self._go(3)
-
         @on(Button.Pressed, '#bld-s3-back')
         def step3_back(self): self._go(2)
 
@@ -172,14 +194,13 @@ else:
         def _go(self, step: int):
             for s in [1, 2, 3]:
                 w = self.query_one(f'#bld-s{s}')
-                if s == step:
-                    w.remove_class('hidden')
-                else:
-                    w.add_class('hidden')
+                if s == step: w.remove_class('hidden')
+                else: w.add_class('hidden')
+            self.query_one(VerticalScroll).scroll_home(animate=False)
 
 
     # ---- Dirs Tab ---------------------------------------------------------------
-    class DirsTab(TabPane):
+    class DirsTab(ScrollMixin, TabPane):
         def compose(self) -> ComposeResult:
             opts = _preset_options('open_director') or _preset_options('director')
             if not opts:
@@ -224,22 +245,15 @@ else:
             return 'advanced' if rs.pressed_index == 1 else 'basic'
 
         @on(Button.Pressed, '#dir-s1-next')
-        def s1_next(self):
-            self._go(2)
-
+        def s1_next(self): self._go(2)
         @on(Button.Pressed, '#dir-s2-back')
         def s2_back(self): self._go(1)
-
         @on(Button.Pressed, '#dir-s2-next')
         def s2_next(self):
-            if self._mode() == 'basic':
-                self._generate()
-            else:
-                self._go(3)
-
+            if self._mode() == 'basic': self._generate()
+            else: self._go(3)
         @on(Button.Pressed, '#dir-s3-back')
         def s3_back(self): self._go(2)
-
         @on(Button.Pressed, '#dir-generate')
         def do_generate(self): self._generate()
 
@@ -271,14 +285,13 @@ else:
         def _go(self, step: int):
             for s in [1, 2, 3]:
                 w = self.query_one(f'#dir-s{s}')
-                if s == step:
-                    w.remove_class('hidden')
-                else:
-                    w.add_class('hidden')
+                if s == step: w.remove_class('hidden')
+                else: w.add_class('hidden')
+            self.query_one(VerticalScroll).scroll_home(animate=False)
 
 
     # ---- Files Tab --------------------------------------------------------------
-    class FilesTab(TabPane):
+    class FilesTab(ScrollMixin, TabPane):
         def compose(self) -> ComposeResult:
             opts = _preset_options('exposed_file') or _preset_options('file')
             if not opts:
@@ -324,20 +337,14 @@ else:
 
         @on(Button.Pressed, '#ff-s1-next')
         def s1_next(self): self._go(2)
-
         @on(Button.Pressed, '#ff-s2-back')
         def s2_back(self): self._go(1)
-
         @on(Button.Pressed, '#ff-s2-next')
         def s2_next(self):
-            if self._mode() == 'basic':
-                self._generate()
-            else:
-                self._go(3)
-
+            if self._mode() == 'basic': self._generate()
+            else: self._go(3)
         @on(Button.Pressed, '#ff-s3-back')
         def s3_back(self): self._go(2)
-
         @on(Button.Pressed, '#ff-generate')
         def do_generate(self): self._generate()
 
@@ -369,14 +376,13 @@ else:
         def _go(self, step: int):
             for s in [1, 2, 3]:
                 w = self.query_one(f'#ff-s{s}')
-                if s == step:
-                    w.remove_class('hidden')
-                else:
-                    w.add_class('hidden')
+                if s == step: w.remove_class('hidden')
+                else: w.add_class('hidden')
+            self.query_one(VerticalScroll).scroll_home(animate=False)
 
 
     # ---- Presets Tab ------------------------------------------------------------
-    class PresetsTab(TabPane):
+    class PresetsTab(ScrollMixin, TabPane):
         def compose(self) -> ComposeResult:
             with VerticalScroll():
                 presets = load_presets()
@@ -419,10 +425,6 @@ else:
         BINDINGS = [
             ('q', 'quit', 'Quit'),
             ('ctrl+c', 'quit', 'Quit'),
-            ('j', 'scroll_down', 'Scroll Down'),
-            ('k', 'scroll_up', 'Scroll Up'),
-            ('pagedown', 'scroll_down_page', 'Page Down'),
-            ('pageup', 'scroll_up_page', 'Page Up'),
         ]
 
         def compose(self) -> ComposeResult:
@@ -437,26 +439,6 @@ else:
                 with PresetsTab('\u2b50 Presets'):
                     pass
             yield Footer()
-
-        def action_scroll_down(self):
-            scroller = self.query(VerticalScroll)
-            if scroller:
-                scroller.first().scroll_down()
-
-        def action_scroll_up(self):
-            scroller = self.query(VerticalScroll)
-            if scroller:
-                scroller.first().scroll_up()
-
-        def action_scroll_down_page(self):
-            scroller = self.query(VerticalScroll)
-            if scroller:
-                scroller.first().scroll_page_down()
-
-        def action_scroll_up_page(self):
-            scroller = self.query(VerticalScroll)
-            if scroller:
-                scroller.first().scroll_page_up()
 
 
     def run():
