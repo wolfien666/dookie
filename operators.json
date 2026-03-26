@@ -1,0 +1,333 @@
+{
+  "categories": [
+    {
+      "id": "domain",
+      "label": "Domain & URL",
+      "color": "magenta",
+      "operators": [
+        {
+          "id": "site",
+          "syntax": "site:",
+          "label": "Site / Domain",
+          "description": "Restrict results to a specific domain, subdomain, or TLD",
+          "accepts_value": true,
+          "supports_wildcard": true,
+          "supports_quotes": false,
+          "example": "site:gov.ca",
+          "notes": "Use site:*.example.com for all subdomains"
+        },
+        {
+          "id": "inurl",
+          "syntax": "inurl:",
+          "label": "In URL",
+          "description": "Keyword must appear in the URL",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": true,
+          "example": "inurl:admin",
+          "notes": "Case insensitive"
+        },
+        {
+          "id": "allinurl",
+          "syntax": "allinurl:",
+          "label": "All In URL",
+          "description": "ALL specified keywords must appear in the URL",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "allinurl:admin login",
+          "notes": "Space-separated; no other operators should follow"
+        },
+        {
+          "id": "inanchor",
+          "syntax": "inanchor:",
+          "label": "In Anchor",
+          "description": "Keyword appears in anchor text of links pointing to the page",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": true,
+          "example": "inanchor:\"click here\"",
+          "notes": "Useful for finding pages linked with specific text"
+        },
+        {
+          "id": "allinanchor",
+          "syntax": "allinanchor:",
+          "label": "All In Anchor",
+          "description": "ALL keywords must appear in anchor text",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "allinanchor:best cheap flights",
+          "notes": "Space-separated; no other operators should follow"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "label": "Page Content",
+      "color": "yellow",
+      "operators": [
+        {
+          "id": "intitle",
+          "syntax": "intitle:",
+          "label": "In Title",
+          "description": "Keyword must appear in the page title",
+          "accepts_value": true,
+          "supports_wildcard": true,
+          "supports_quotes": true,
+          "example": "intitle:\"index of /\"",
+          "notes": "Exact phrase match with quotes"
+        },
+        {
+          "id": "allintitle",
+          "syntax": "allintitle:",
+          "label": "All In Title",
+          "description": "ALL keywords must appear in the page title",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "allintitle:login admin panel",
+          "notes": "Space-separated; no other operators should follow"
+        },
+        {
+          "id": "intext",
+          "syntax": "intext:",
+          "label": "In Text",
+          "description": "Keyword must appear in the body text of the page",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": true,
+          "example": "intext:\"sql syntax error\"",
+          "notes": "Great for finding error messages or exposed content"
+        },
+        {
+          "id": "allintext",
+          "syntax": "allintext:",
+          "label": "All In Text",
+          "description": "ALL keywords must appear in body text",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "allintext:username password",
+          "notes": "Space-separated; no other operators should follow"
+        },
+        {
+          "id": "inpostauthor",
+          "syntax": "inpostauthor:",
+          "label": "In Post Author",
+          "description": "Find blog posts written by a specific author",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": true,
+          "example": "inpostauthor:\"john doe\"",
+          "notes": "Works on indexed blog posts"
+        }
+      ]
+    },
+    {
+      "id": "file",
+      "label": "File & Type",
+      "color": "cyan",
+      "operators": [
+        {
+          "id": "filetype",
+          "syntax": "filetype:",
+          "label": "File Type",
+          "description": "Restrict results to a specific file extension",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "filetype:pdf",
+          "notes": "Alias: ext: — common: pdf, xls, doc, sql, env, log, bak, xml, json",
+          "common_values": ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "sql", "xml", "json", "env", "log", "bak", "config", "ini", "yml", "yaml", "php", "asp", "jsp", "py", "rb", "sh", "pem", "key", "cer", "pfx"]
+        },
+        {
+          "id": "ext",
+          "syntax": "ext:",
+          "label": "Extension (alias)",
+          "description": "Alias for filetype: — same behavior",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "ext:sql",
+          "notes": "Interchangeable with filetype:"
+        }
+      ]
+    },
+    {
+      "id": "cache_info",
+      "label": "Cache & Info",
+      "color": "blue",
+      "operators": [
+        {
+          "id": "cache",
+          "syntax": "cache:",
+          "label": "Cache",
+          "description": "View Google's cached version of a specific page",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "cache:example.com",
+          "notes": "Returns the last cached snapshot"
+        },
+        {
+          "id": "related",
+          "syntax": "related:",
+          "label": "Related",
+          "description": "Find websites similar to the specified URL",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "related:reddit.com",
+          "notes": "Useful for competitor research"
+        },
+        {
+          "id": "info",
+          "syntax": "info:",
+          "label": "Info",
+          "description": "Show Google's summary information about a URL",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "info:example.com",
+          "notes": "May be deprecated in newer Google versions"
+        }
+      ]
+    },
+    {
+      "id": "date",
+      "label": "Date & Range",
+      "color": "green",
+      "operators": [
+        {
+          "id": "before",
+          "syntax": "before:",
+          "label": "Before Date",
+          "description": "Limit results to pages indexed before this date",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "before:2023-01-01",
+          "notes": "Format: YYYY-MM-DD"
+        },
+        {
+          "id": "after",
+          "syntax": "after:",
+          "label": "After Date",
+          "description": "Limit results to pages indexed after this date",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "after:2020-01-01",
+          "notes": "Format: YYYY-MM-DD"
+        },
+        {
+          "id": "numrange",
+          "syntax": "numrange:",
+          "label": "Number Range",
+          "description": "Search within a numeric range",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "numrange:80-8080",
+          "notes": "Format: low-high"
+        },
+        {
+          "id": "dotdot",
+          "syntax": "..",
+          "label": "Number Range (shorthand)",
+          "description": "Shorthand range between two numbers",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "2020..2026",
+          "notes": "Used inline between two values"
+        }
+      ]
+    },
+    {
+      "id": "boolean",
+      "label": "Boolean & Logic",
+      "color": "red",
+      "operators": [
+        {
+          "id": "or",
+          "syntax": "OR",
+          "label": "OR",
+          "description": "Either term must be present (also: |)",
+          "accepts_value": false,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "admin OR administrator",
+          "notes": "Must be uppercase; also written as |"
+        },
+        {
+          "id": "and",
+          "syntax": "AND",
+          "label": "AND",
+          "description": "Both terms must be present (default behavior with space)",
+          "accepts_value": false,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "login AND panel",
+          "notes": "Explicit AND; usually redundant with space"
+        },
+        {
+          "id": "exclude",
+          "syntax": "-",
+          "label": "Exclude (-)",
+          "description": "Exclude a term or operator result from results",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": true,
+          "example": "-site:github.com",
+          "notes": "No space between - and the term"
+        },
+        {
+          "id": "exact",
+          "syntax": "\"...\"",
+          "label": "Exact Phrase",
+          "description": "Force exact phrase match",
+          "accepts_value": true,
+          "supports_wildcard": true,
+          "supports_quotes": false,
+          "example": "\"index of /\"",
+          "notes": "Use * inside quotes as wildcard placeholder"
+        },
+        {
+          "id": "wildcard",
+          "syntax": "*",
+          "label": "Wildcard (*)",
+          "description": "Placeholder for any word in a phrase",
+          "accepts_value": false,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "\"admin * panel\"",
+          "notes": "Only works inside quoted strings"
+        },
+        {
+          "id": "group",
+          "syntax": "(...)",
+          "label": "Grouping",
+          "description": "Group terms to control operator precedence",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "(site:fb.com | site:twitter.com) intext:login",
+          "notes": "Use with OR/AND for complex queries"
+        },
+        {
+          "id": "synonym",
+          "syntax": "~",
+          "label": "Synonym (~)",
+          "description": "Include synonyms of the term",
+          "accepts_value": true,
+          "supports_wildcard": false,
+          "supports_quotes": false,
+          "example": "~security",
+          "notes": "May not work in all versions of Google"
+        }
+      ]
+    }
+  ]
+}
