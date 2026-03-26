@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared Rich display helpers — banner, tables, panels."""
+"""Shared Rich display helpers."""
 import os
 from rich.console import Console
 from rich.panel import Panel
@@ -19,10 +19,9 @@ GRADIENT = ['bright_magenta', 'magenta', 'cyan', 'bright_cyan']
 
 
 def _gradient_text(text: str) -> Text:
-    colors = GRADIENT
     t = Text()
     for i, ch in enumerate(text):
-        t.append(ch, style=f'bold {colors[i % len(colors)]}')
+        t.append(ch, style=f'bold {GRADIENT[i % len(GRADIENT)]}')
     return t
 
 
@@ -33,9 +32,10 @@ def print_banner():
     else:
         raw = '  dookie'
     for line in raw.split('\n'):
-        console.print(_gradient_text(line))
+        if line.strip():
+            console.print(_gradient_text(line))
     console.print()
-    console.print('  [dim]Google dork builder — internet-wide OSINT[/dim]')
+    console.print('  [dim]Google Dork Builder — internet-wide OSINT[/dim]')
     console.print()
 
 
@@ -66,12 +66,12 @@ def live_preview(dork: str):
 
 
 def ask(prompt: str, default: str = '') -> str:
-    suffix = f' [dim](leave blank to skip)[/dim]' if default == '' else f' [dim](default: {default})[/dim]'
+    suffix = ' [dim](leave blank to skip)[/dim]' if default == '' else f' [dim](default: {default})[/dim]'
     return console.input(f'  [bold cyan]{prompt}[/bold cyan]{suffix}: ').strip() or default
 
 
 def ask_choice(prompt: str, choices: list) -> int:
-    """Ask user to pick from 1..N, return 0-based index or -1 on cancel."""
+    """Prompt user to pick 1..N. Returns 0-based index, or -1 on cancel/0."""
     while True:
         raw = console.input(f'  [bold]{prompt}[/bold] (1-{len(choices)}, or 0 to cancel): ').strip()
         if raw == '0':
@@ -86,15 +86,22 @@ def ask_choice(prompt: str, choices: list) -> int:
 
 
 def mode_toggle() -> str:
-    """Ask user for Basic or Advanced mode. Returns 'basic' or 'advanced'."""
+    """Return 'basic' or 'advanced'."""
     console.print()
     console.print('  [bold]Select mode:[/bold]')
     console.print('  [green]1[/green]  Basic     — choose a preset and go')
     console.print('  [yellow]2[/yellow]  Advanced  — preset + custom keywords & operators')
     console.print()
-    while True:
-        raw = ask_choice('Mode', ['Basic', 'Advanced'])
-        if raw == 0:
-            return 'basic'
-        elif raw == 1:
-            return 'advanced'
+    idx = ask_choice('Mode', ['Basic', 'Advanced'])
+    return 'advanced' if idx == 1 else 'basic'
+
+
+def copy_offer(dork: str):
+    try:
+        import pyperclip
+        raw = console.input('  Copy to clipboard? [y/N]: ').strip().lower()
+        if raw == 'y':
+            pyperclip.copy(dork)
+            console.print('  [green]Copied![/green]')
+    except ImportError:
+        console.print('  [dim](install pyperclip to enable clipboard copy)[/dim]')

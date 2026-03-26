@@ -2,5 +2,5 @@ art
 rich
 loguru
 requests
-Flask
+textual
 pyperclip

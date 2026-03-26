@@ -3,8 +3,10 @@
 from assembler import assemble_dork, load_presets
 from cli.display import (
     console, print_section, numbered_table,
-    ask, ask_choice, live_preview, mode_toggle
+    ask, ask_choice, live_preview, copy_offer, mode_toggle
 )
+
+CAT_SLUG = 'exposed_files'
 
 
 def run():
@@ -16,32 +18,39 @@ def run():
         _advanced()
 
 
+def _get_presets():
+    all_presets = load_presets()
+    presets = [p for p in all_presets if p['category'] == CAT_SLUG]
+    if not presets:
+        presets = [p for p in all_presets
+                   if 'file' in p['category_label'].lower()
+                   or 'expos' in p['category_label'].lower()]
+    return presets
+
+
 def _basic():
-    presets = [p for p in load_presets() if p['category'] == 'files']
+    presets = _get_presets()
     if not presets:
         console.print('[red]No file presets found.[/red]')
         return
-
-    print_section('File Finder Presets')
+    print_section('Pick a Preset')
     labels = [p['name'] for p in presets]
     console.print(numbered_table(labels, col='Preset'))
     idx = ask_choice('Choose preset', labels)
     if idx < 0:
         return
-
     dork = presets[idx]['template']
     live_preview(dork)
-    _copy_offer(dork)
+    copy_offer(dork)
 
 
 def _advanced():
-    presets = [p for p in load_presets() if p['category'] == 'files']
+    presets = _get_presets()
     if not presets:
         console.print('[red]No file presets found.[/red]')
         return
 
-    # Step 1
-    print_section('Step 1 — Choose preset')
+    print_section('Step 1 — Choose Preset')
     labels = [p['name'] for p in presets]
     console.print(numbered_table(labels, col='Preset'))
     idx = ask_choice('Choose preset', labels)
@@ -49,37 +58,21 @@ def _advanced():
         return
     preset = presets[idx]
 
-    # Step 2 — keywords
     print_section('Step 2 — Keywords')
     kw_raw = ask('Add keywords (space-separated)')
     keywords = [k for k in kw_raw.split() if k]
 
-    # Step 3 — operators
-    print_section('Step 3 — Optional operators')
-    console.print('  [dim]Available: site, intext, intitle, inurl, filetype, minus[/dim]')
-    console.print()
-    op_choices = ['site', 'intext', 'intitle', 'inurl', 'filetype', 'minus']
-    operators = {}
-    for op in op_choices:
-        val = ask(f'{op}:')
+    print_section('Step 3 — Optional Operators')
+    console.print('  [dim]Leave blank to skip.[/dim]\n')
+    ops = {}
+    for opname in ['site', 'intext', 'intitle', 'inurl', 'filetype']:
+        val = ask(f'{opname}:')
         if val:
-            operators[op] = val
+            ops[opname] = val
+    excl = ask('Exclude terms (comma-separated)')
+    if excl:
+        ops['exclude'] = excl
 
-    dork = assemble_dork(
-        keywords=keywords,
-        operators=operators,
-        preset_id=preset['id']
-    )
+    dork = assemble_dork(keywords=keywords, operators=ops, preset_id=preset['id'])
     live_preview(dork)
-    _copy_offer(dork)
-
-
-def _copy_offer(dork: str):
-    try:
-        import pyperclip
-        raw = console.input('  Copy to clipboard? [y/N]: ').strip().lower()
-        if raw == 'y':
-            pyperclip.copy(dork)
-            console.print('  [green]Copied![/green]')
-    except ImportError:
-        pass
+    copy_offer(dork)
